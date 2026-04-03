@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prisma Shift — Daily Color Puzzle</title>
+  <meta name="description" content="Each day, mix a mystery color using HSL sliders — only 3 attempts allowed. How close can you get?" />
+  <link rel="canonical" href="https://prismashift.builtbycrew.online" />
+  <meta property="og:title" content="Prisma Shift — Daily Color Puzzle" />
+  <meta property="og:description" content="Each day, mix a mystery color using HSL sliders — only 3 attempts allowed. How close can you get?" />
+  <meta property="og:url" content="https://prismashift.builtbycrew.online" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://prismashift.builtbycrew.online/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Prisma Shift — Daily Color Puzzle" />
+  <meta name="twitter:description" content="Each day, mix a mystery color using HSL sliders — only 3 attempts allowed. How close can you get?" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231A1A1A'/%3E%3Crect x='2' y='2' width='13' height='13' fill='%23E63329'/%3E%3Crect x='17' y='2' width='13' height='13' fill='%232255CC'/%3E%3Crect x='2' y='17' width='13' height='13' fill='%232255CC'/%3E%3Crect x='17' y='17' width='13' height='13' fill='%23E63329'/%3E%3C/svg%3E" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F0E8;
+      --ink: #1A1A1A;
+      --red: #E63329;
+      --blue: #2255CC;
+      --border: 2px solid #1A1A1A;
+      --border3: 3px solid #1A1A1A;
+      --font-display: 'Barlow Condensed', 'Futura', ui-sans-serif, sans-serif;
+      --font-body: 'Barlow', ui-sans-serif, sans-serif;
+    }
+
+    html { background: var(--bg); color: var(--ink); font-family: var(--font-body); }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: var(--border3);
+      background: var(--ink);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      height: 56px;
+      position: relative;
+      opacity: 0;
+      transform: translateY(-20px);
+      animation: slideDown 0.4s ease forwards 0.05s;
+    }
+
+    .header-logo {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo-squares {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      width: 22px;
+      height: 22px;
+    }
+
+    .header-logo-squares span {
+      display: block;
+    }
+
+    .header-logo-squares span:nth-child(1) { background: var(--red); }
+    .header-logo-squares span:nth-child(2) { background: var(--blue); }
+    .header-logo-squares span:nth-child(3) { background: var(--blue); }
+    .header-logo-squares span:nth-child(4) { background: var(--red); }
+
+    .header-meta {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.65);
+    }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 2rem;
+      width: 100%;
+    }
+
+    /* ── SECTIONS ANIMATION ── */
+    .section-enter {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    @keyframes slideDown { to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      15% { transform: translateX(-8px); }
+      35% { transform: translateX(8px); }
+      55% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.06); }
+      60% { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+    @keyframes revealSwatch {
+      0% { transform: scaleX(0); opacity: 0; }
+      100% { transform: scaleX(1); opacity: 1; }
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes burstIn {
+      0% { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+      70% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes spinBurst {
+      0% { transform: rotate(0deg) scale(0); opacity: 1; }
+      100% { transform: rotate(360deg) scale(3); opacity: 0; }
+    }
+
+    /* ── PUZZLE NUMBER / STREAK BAR ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.4s ease forwards 0.15s;
+    }
+
+    .puzzle-num {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .streak-pill {
+      display: flex;
+      gap: 12px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .streak-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--ink);
+    }
+
+    .streak-item span:first-child {
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .streak-item .streak-label {
+      font-size: 0.7rem;
+      color: rgba(26,26,26,0.5);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── MYSTERY BLOCK ── */
+    .mystery-block {
+      border: var(--border3);
+      background: var(--ink);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.4s ease forwards 0.25s;
+    }
+
+    .mystery-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .mystery-text {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bg);
+      line-height: 1.5;
+    }
+
+    .mystery-text strong {
+      font-weight: 900;
+      font-size: 1.05rem;
+      color: #fff;
+      display: block;
+    }
+
+    /* ── ATTEMPTS DISPLAY ── */
+    .attempts-section {
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.4s ease forwards 0.35s;
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(26,26,26,0.55);
+      margin-bottom: 0.5rem;
+    }
+
+    .attempt-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .attempt-row {
+      display: grid;
+      grid-template-columns: 24px 1fr 80px 56px;
+      align-items: stretch;
+      gap: 6px;
+      min-height: 52px;
+    }
+
+    .attempt-number {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: rgba(26,26,26,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .attempt-swatch {
+      border: var(--border);
+      background: rgba(26,26,26,0.06);
+      transform-origin: left center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .attempt-swatch.filled {
+      animation: revealSwatch 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    .attempt-swatch-inner {
+      width: 100%;
+      height: 100%;
+      min-height: 52px;
+    }
+
+    .attempt-score {
+      border: var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .score-num {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      animation: countUp 0.35s ease forwards;
+    }
+
+    .score-label {
+      font-family: var(--font-display);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(26,26,26,0.5);
+    }
+
+    .attempt-emoji {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      border: var(--border);
+      background: var(--bg);
+    }
+
+    .attempt-row.empty .attempt-swatch { border-style: dashed; }
+    .attempt-row.empty .attempt-score { border-style: dashed; opacity: 0.4; }
+    .attempt-row.empty .attempt-emoji { border-style: dashed; opacity: 0.3; }
+
+    /* ── MIXER PANEL ── */
+    .mixer-panel {
+      border: var(--border3);
+      background: var(--bg);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.4s ease forwards 0.45s;
+    }
+
+    .mixer-panel.shake {
+      animation: shake 0.5s ease;
+    }
+
+    .mixer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .mixer-title {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .current-preview {
+      width: 56px;
+      height: 36px;
+      border: var(--border3);
+      transition: background 0.1s ease;
+    }
+
+    /* ── SLIDERS ── */
+    .slider-group {
+      margin-bottom: 0.9rem;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.3rem;
+    }
+
+    .slider-label {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      width: 22px;
+      flex-shrink: 0;
+      color: var(--ink);
+    }
+
+    .slider-value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      min-width: 44px;
+      text-align: right;
+      color: var(--ink);
+      flex-shrink: 0;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 18px;
+      background: transparent;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Hue slider track */
+    .slider-hue input[type="range"]::-webkit-slider-runnable-track {
+      height: 18px;
+      border: var(--border);
+      background: linear-gradient(to right,
+        hsl(0,75%,50%), hsl(30,75%,50%), hsl(60,75%,50%), hsl(90,75%,50%),
+        hsl(120,75%,50%), hsl(150,75%,50%), hsl(180,75%,50%), hsl(210,75%,50%),
+        hsl(240,75%,50%), hsl(270,75%,50%), hsl(300,75%,50%), hsl(330,75%,50%), hsl(360,75%,50%)
+      );
+    }
+
+    .slider-sat input[type="range"]::-webkit-slider-runnable-track {
+      height: 18px;
+      border: var(--border);
+      background: linear-gradient(to right, hsl(var(--sat-h,180), 0%, 50%), hsl(var(--sat-h,180), 100%, 50%));
+    }
+
+    .slider-lit input[type="range"]::-webkit-slider-runnable-track {
+      height: 18px;
+      border: var(--border);
+      background: linear-gradient(to right, hsl(var(--lit-h,180), 60%, 5%), hsl(var(--lit-h,180), 60%, 50%), hsl(var(--lit-h,180), 60%, 95%));
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      background: var(--bg);
+      border: 3px solid var(--ink);
+      border-radius: 0;
+      margin-top: -2px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.15);
+      background: var(--ink);
+    }
+
+    input[type="range"]:focus-visible::-webkit-slider-thumb {
+      outline: 3px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    /* Firefox */
+    .slider-hue input[type="range"]::-moz-range-track {
+      height: 18px;
+      border: var(--border);
+      background: linear-gradient(to right,
+        hsl(0,75%,50%), hsl(30,75%,50%), hsl(60,75%,50%), hsl(90,75%,50%),
+        hsl(120,75%,50%), hsl(150,75%,50%), hsl(180,75%,50%), hsl(210,75%,50%),
+        hsl(240,75%,50%), hsl(270,75%,50%), hsl(300,75%,50%), hsl(330,75%,50%), hsl(360,75%,50%)
+      );
+    }
+
+    .slider-sat input[type="range"]::-moz-range-track {
+      height: 18px;
+      border: var(--border);
+      background: linear-gradient(to right, hsl(var(--sat-h,180), 0%, 50%), hsl(var(--sat-h,180), 100%, 50%));
+    }
+
+    .slider-lit input[type="range"]::-moz-range-track {
+      height: 18px;
+      border: var(--border);
+      background: linear-gradient(to right, hsl(var(--lit-h,180), 60%, 5%), hsl(var(--lit-h,180), 60%, 50%), hsl(var(--lit-h,180), 60%, 95%));
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      background: var(--bg);
+      border: 3px solid var(--ink);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-submit {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      background: var(--ink);
+      color: var(--bg);
+      border: var(--border3);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover { background: #333; }
+    .btn-submit:active { transform: scale(0.96); }
+    .btn-submit:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-submit:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    /* ── GAME OVER PANEL ── */
+    .gameover-panel {
+      display: none;
+      border: var(--border3);
+      background: var(--bg);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    .gameover-panel.visible {
+      display: block;
+      animation: fadeUp 0.45s ease forwards;
+    }
+
+    .gameover-header {
+      background: var(--ink);
+      color: var(--bg);
+      padding: 0.75rem 1.25rem;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .gameover-header.win { background: var(--blue); }
+    .gameover-header.lose { background: var(--red); }
+
+    .gameover-body {
+      padding: 1.25rem;
+    }
+
+    .reveal-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .reveal-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .reveal-swatch {
+      height: 130px;
+      border: var(--border3);
+    }
+
+    .reveal-caption {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(26,26,26,0.55);
+    }
+
+    .reveal-hsl {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+    }
+
+    .score-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .score-bar-block {
+      flex: 1;
+      height: 8px;
+      border: var(--border);
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: var(--ink);
+      transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .action-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-share, .btn-next {
+      padding: 0.75rem 1rem;
+      border: var(--border3);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.9rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.08s ease, opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-share { background: var(--blue); color: #fff; }
+    .btn-share:hover { opacity: 0.88; }
+    .btn-share:active { transform: scale(0.96); }
+
+    .btn-next { background: var(--bg); color: var(--ink); }
+    .btn-next:hover { background: rgba(26,26,26,0.06); }
+    .btn-next:active { transform: scale(0.96); }
+
+    .btn-share:focus-visible, .btn-next:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    .share-toast {
+      display: none;
+      text-align: center;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-top: 0.5rem;
+      animation: countUp 0.3s ease;
+    }
+
+    /* ── CELEBRATION ── */
+    .celebration-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .burst-particle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--ink);
+    }
+
+    /* ── COUNTDOWN ── */
+    .countdown-section {
+      border: var(--border);
+      padding: 0.9rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.4s ease forwards 0.55s;
+    }
+
+    .countdown-label {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(26,26,26,0.55);
+    }
+
+    .countdown-timer {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
+      color: var(--ink);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: var(--border3);
+      background: var(--ink);
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    footer a {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.65);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    footer a:hover { color: var(--bg); }
+    footer a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+    footer .footer-sep {
+      color: rgba(245,240,232,0.25);
+      font-size: 0.7rem;
+    }
+
+    /* ── HOW TO PLAY ── */
+    .howto-section {
+      border: var(--border);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.4s ease forwards 0.6s;
+    }
+
+    .howto-title {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(26,26,26,0.55);
+      margin-bottom: 0.6rem;
+    }
+
+    .howto-items {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .howto-item {
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      color: rgba(26,26,26,0.7);
+      line-height: 1.5;
+      display: flex;
+      gap: 8px;
+    }
+
+    .howto-item::before {
+      content: '—';
+      color: var(--red);
+      flex-shrink: 0;
+    }
+
+    /* ── CELEBRATE BOX ── */
+    .win-badge {
+      display: inline-block;
+      background: var(--blue);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 2rem;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.8rem;
+      margin-bottom: 0.75rem;
+      animation: burstIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    .win-badge.lose-badge { background: var(--red); }
+
+    /* ── RESPONSIVE ── */
+    @media (min-width: 480px) {
+      .attempt-row { min-height: 60px; }
+      .reveal-swatch { height: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-logo" aria-label="Prisma Shift">
+      <div class="header-logo-squares" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      PRISMA SHIFT
+    </div>
+    <div class="header-meta" id="headerDate" aria-live="polite"></div>
+  </header>
+
+  <main>
+    <!-- Top bar: puzzle number + streak -->
+    <div class="top-bar" role="region" aria-label="Puzzle info">
+      <div class="puzzle-num" id="puzzleNum"></div>
+      <div class="streak-pill" aria-label="Streak stats">
+        <div class="streak-item">
+          <span id="currentStreakNum">0</span>
+          <span class="streak-label">Streak</span>
+        </div>
+        <div class="streak-item">
+          <span id="bestStreakNum">0</span>
+          <span class="streak-label">Best</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mystery hint -->
+    <div class="mystery-block" role="note" aria-label="Today's puzzle challenge">
+      <div class="mystery-icon" aria-hidden="true">◼</div>
+      <div class="mystery-text">
+        <strong>TODAY'S TARGET COLOR</strong>
+        Adjust H, S, L sliders and submit your guess. 3 attempts to match the hidden color.
+      </div>
+    </div>
+
+    <!-- Attempt history -->
+    <section class="attempts-section" aria-label="Attempt history">
+      <div class="section-label">Attempts</div>
+      <div class="attempt-rows" id="attemptRows" role="list">
+        <!-- generated by JS -->
+      </div>
+    </section>
+
+    <!-- Mixer -->
+    <section class="mixer-panel" id="mixerPanel" aria-label="Color mixer">
+      <div class="mixer-header">
+        <div class="mixer-title">Your Mix</div>
+        <div class="current-preview" id="currentPreview" role="img" aria-label="Current mixed color preview" style="background: hsl(180,55%,50%)"></div>
+      </div>
+
+      <div class="slider-group slider-hue">
+        <div class="slider-row">
+          <label class="slider-label" for="sliderH">H</label>
+          <input type="range" id="sliderH" min="0" max="360" value="180" aria-label="Hue 0 to 360" />
+          <span class="slider-value" id="valH" aria-live="polite">180°</span>
+        </div>
+      </div>
+
+      <div class="slider-group slider-sat" style="--sat-h: 180">
+        <div class="slider-row">
+          <label class="slider-label" for="sliderS">S</label>
+          <input type="range" id="sliderS" min="0" max="100" value="55" aria-label="Saturation 0 to 100 percent" />
+          <span class="slider-value" id="valS" aria-live="polite">55%</span>
+        </div>
+      </div>
+
+      <div class="slider-group slider-lit" style="--lit-h: 180">
+        <div class="slider-row">
+          <label class="slider-label" for="sliderL">L</label>
+          <input type="range" id="sliderL" min="0" max="100" value="50" aria-label="Lightness 0 to 100 percent" />
+          <span class="slider-value" id="valL" aria-live="polite">50%</span>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btnSubmit" aria-label="Submit color guess">
+        <span aria-hidden="true">▶</span> Submit Guess
+        <span id="attemptIndicator" style="opacity:0.7; font-size:0.85em">(1 / 3)</span>
+      </button>
+    </section>
+
+    <!-- Game over reveal -->
+    <div class="gameover-panel" id="gameoverPanel" role="region" aria-label="Result">
+      <div class="gameover-header" id="gameoverHeader"></div>
+      <div class="gameover-body">
+        <div id="winBadgeWrap"></div>
+        <div class="reveal-row">
+          <div class="reveal-block">
+            <div class="reveal-swatch" id="revealTarget" role="img" aria-label="Target color swatch"></div>
+            <div class="reveal-caption">Target</div>
+            <div class="reveal-hsl" id="revealTargetHSL"></div>
+          </div>
+          <div class="reveal-block">
+            <div class="reveal-swatch" id="revealBest" role="img" aria-label="Your best guess swatch"></div>
+            <div class="reveal-caption">Your Best</div>
+            <div class="reveal-hsl" id="revealBestHSL"></div>
+          </div>
+        </div>
+
+        <div class="action-btns">
+          <button class="btn-share" id="btnShare" aria-label="Share result to clipboard">
+            ⎘ Share
+          </button>
+          <button class="btn-next" id="btnHowto" aria-label="Show how to play">
+            ? How to play
+          </button>
+        </div>
+        <div class="share-toast" id="shareToast" role="status" aria-live="polite">Copied to clipboard!</div>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown-section" role="timer" aria-label="Time until next puzzle">
+      <div class="countdown-label">Next Puzzle</div>
+      <div class="countdown-timer" id="countdownTimer" aria-live="polite">—</div>
+    </div>
+
+    <!-- How to play -->
+    <div class="howto-section" id="howtoSection">
+      <div class="howto-title">How to play</div>
+      <div class="howto-items" role="list">
+        <div class="howto-item" role="listitem">Adjust the Hue, Saturation, and Lightness sliders to mix your guess color.</div>
+        <div class="howto-item" role="listitem">You have 3 attempts to match the hidden target color.</div>
+        <div class="howto-item" role="listitem">Score 95+ to win. Each attempt shows your score and an emoji: 🟩 great, 🟨 close, 🟥 far off.</div>
+        <div class="howto-item" role="listitem">A new puzzle unlocks every day at midnight.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Celebration overlay -->
+  <div class="celebration-overlay" id="celebrationOverlay" aria-hidden="true"></div>
+
+  <footer>
+    <a href="https://builtbycrew.online" target="_blank" rel="noopener">Built by Crew</a>
+    <span class="footer-sep" aria-hidden="true">|</span>
+    <a href="https://github.com/BuiltByCrew/prismashift" target="_blank" rel="noopener">GitHub</a>
+    <span class="footer-sep" aria-hidden="true">|</span>
+    <a href="https://buymeacoffee.com/builtbycrew" target="_blank" rel="noopener">Buy us a coffee</a>
+  </footer>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── SEEDED PRNG (mulberry32) ──────────────────────────────────────────────
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function dateToSeed(dateStr) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < dateStr.length; i++) {
+      h ^= dateStr.charCodeAt(i);
+      h = Math.imul(h, 0x01000193);
+    }
+    return h >>> 0;
+  }
+
+  // ── DATE / PUZZLE ─────────────────────────────────────────────────────────
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const EPOCH = new Date('2026-01-01T00:00:00Z');
+  const todayDate = new Date(todayStr + 'T00:00:00Z');
+  const puzzleNumber = Math.floor((todayDate - EPOCH) / 86400000) + 1;
+
+  // Generate target color from date seed
+  function generateTarget(dateStr) {
+    const rng = mulberry32(dateToSeed(dateStr));
+    const h = Math.floor(rng() * 360);
+    const s = Math.floor(rng() * 70) + 20; // 20–90
+    const l = Math.floor(rng() * 50) + 25; // 25–75
+    return { h, s, l };
+  }
+
+  const TARGET = generateTarget(todayStr);
+
+  // ── COLOR MATH ────────────────────────────────────────────────────────────
+  function hslToRgb(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+  }
+
+  function rgbToXyz(r, g, b) {
+    const linearize = c => {
+      c /= 255;
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    const R = linearize(r), G = linearize(g), B = linearize(b);
+    return [
+      R * 0.4124564 + G * 0.3575761 + B * 0.1804375,
+      R * 0.2126729 + G * 0.7151522 + B * 0.0721750,
+      R * 0.0193339 + G * 0.1191920 + B * 0.9503041
+    ];
+  }
+
+  function xyzToLab(x, y, z) {
+    const fn = t => t > 0.008856 ? Math.cbrt(t) : (7.787 * t + 16 / 116);
+    const [fx, fy, fz] = [fn(x / 0.95047), fn(y / 1.00000), fn(z / 1.08883)];
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  }
+
+  function hslToLab(h, s, l) {
+    const [r, g, b] = hslToRgb(h, s, l);
+    const [x, y, z] = rgbToXyz(r, g, b);
+    return xyzToLab(x, y, z);
+  }
+
+  function deltaE(hsl1, hsl2) {
+    const [L1, a1, b1] = hslToLab(hsl1.h, hsl1.s, hsl1.l);
+    const [L2, a2, b2] = hslToLab(hsl2.h, hsl2.s, hsl2.l);
+    return Math.sqrt(Math.pow(L2 - L1, 2) + Math.pow(a2 - a1, 2) + Math.pow(b2 - b1, 2));
+  }
+
+  // Max Delta-E ≈ ~100 in practice; map to 0–100 score
+  function computeScore(guess, target) {
+    const de = deltaE(guess, target);
+    // dE of 0 = perfect (100), dE ~80 = completely off (0)
+    const score = Math.max(0, Math.round(100 - (de / 80) * 100));
+    return Math.min(100, score);
+  }
+
+  // ── STATE ─────────────────────────────────────────────────────────────────
+  const LS_KEY = `bycrew_prismashift_${todayStr}`;
+  const LS_STREAK = `bycrew_prismashift_streak`;
+  const MAX_ATTEMPTS = 3;
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return { attempts: [], done: false, won: false };
+  }
+
+  function saveState(state) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function loadStreak() {
+    try {
+      const raw = localStorage.getItem(LS_STREAK);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return { currentStreak: 0, bestStreak: 0, lastWonDate: null };
+  }
+
+  function saveStreak(streak) {
+    try { localStorage.setItem(LS_STREAK, JSON.stringify(streak)); } catch(e) {}
+  }
+
+  // ── DOM REFS ──────────────────────────────────────────────────────────────
+  const sliderH = document.getElementById('sliderH');
+  const sliderS = document.getElementById('sliderS');
+  const sliderL = document.getElementById('sliderL');
+  const valH = document.getElementById('valH');
+  const valS = document.getElementById('valS');
+  const valL = document.getElementById('valL');
+  const currentPreview = document.getElementById('currentPreview');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const attemptRowsEl = document.getElementById('attemptRows');
+  const gameoverPanel = document.getElementById('gameoverPanel');
+  const gameoverHeader = document.getElementById('gameoverHeader');
+  const revealTarget = document.getElementById('revealTarget');
+  const revealBest = document.getElementById('revealBest');
+  const revealTargetHSL = document.getElementById('revealTargetHSL');
+  const revealBestHSL = document.getElementById('revealBestHSL');
+  const btnShare = document.getElementById('btnShare');
+  const shareToast = document.getElementById('shareToast');
+  const countdownTimer = document.getElementById('countdownTimer');
+  const mixerPanel = document.getElementById('mixerPanel');
+  const winBadgeWrap = document.getElementById('winBadgeWrap');
+  const celebOverlay = document.getElementById('celebrationOverlay');
+  const currentStreakNum = document.getElementById('currentStreakNum');
+  const bestStreakNum = document.getElementById('bestStreakNum');
+
+  let state = loadState();
+  let streakData = loadStreak();
+
+  // ── HEADER DATE ───────────────────────────────────────────────────────────
+  document.getElementById('headerDate').textContent = new Date(todayStr + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('puzzleNum').textContent = `Puzzle #${puzzleNumber}`;
+
+  // ── STREAK DISPLAY ────────────────────────────────────────────────────────
+  function updateStreakDisplay() {
+    animateNumber(currentStreakNum, parseInt(currentStreakNum.textContent) || 0, streakData.currentStreak);
+    animateNumber(bestStreakNum, parseInt(bestStreakNum.textContent) || 0, streakData.bestStreak);
+  }
+
+  function animateNumber(el, from, to) {
+    if (from === to) { el.textContent = to; return; }
+    const steps = 12;
+    const delta = (to - from) / steps;
+    let current = from;
+    let step = 0;
+    const tick = () => {
+      step++;
+      current += delta;
+      el.textContent = Math.round(current);
+      if (step < steps) requestAnimationFrame(tick);
+      else el.textContent = to;
+    };
+    requestAnimationFrame(tick);
+  }
+
+  // ── SLIDER COLOR TRACK UPDATES ────────────────────────────────────────────
+  function updateSliderTracks() {
+    const h = parseInt(sliderH.value);
+    document.querySelector('.slider-sat').style.setProperty('--sat-h', h);
+    document.querySelector('.slider-lit').style.setProperty('--lit-h', h);
+  }
+
+  // ── LIVE PREVIEW ──────────────────────────────────────────────────────────
+  function updatePreview() {
+    const h = parseInt(sliderH.value);
+    const s = parseInt(sliderS.value);
+    const l = parseInt(sliderL.value);
+    valH.textContent = h + '°';
+    valS.textContent = s + '%';
+    valL.textContent = l + '%';
+    currentPreview.style.background = `hsl(${h},${s}%,${l}%)`;
+    updateSliderTracks();
+  }
+
+  sliderH.addEventListener('input', updatePreview);
+  sliderS.addEventListener('input', updatePreview);
+  sliderL.addEventListener('input', updatePreview);
+  updatePreview();
+
+  // ── EMOJI SCORE ───────────────────────────────────────────────────────────
+  function scoreToEmoji(score) {
+    if (score >= 80) return '🟩';
+    if (score >= 50) return '🟨';
+    return '🟥';
+  }
+
+  // ── RENDER ATTEMPT ROWS ───────────────────────────────────────────────────
+  function renderAttemptRows() {
+    attemptRowsEl.innerHTML = '';
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      const attempt = state.attempts[i];
+      const row = document.createElement('div');
+      row.className = 'attempt-row' + (attempt ? '' : ' empty');
+      row.setAttribute('role', 'listitem');
+      row.setAttribute('aria-label', attempt ? `Attempt ${i + 1}: score ${attempt.score}` : `Attempt ${i + 1}: not yet submitted`);
+
+      const numEl = document.createElement('div');
+      numEl.className = 'attempt-number';
+      numEl.textContent = i + 1;
+
+      const swatchEl = document.createElement('div');
+      swatchEl.className = 'attempt-swatch' + (attempt ? ' filled' : '');
+      const swatchInner = document.createElement('div');
+      swatchInner.className = 'attempt-swatch-inner';
+      if (attempt) {
+        swatchInner.style.background = `hsl(${attempt.h},${attempt.s}%,${attempt.l}%)`;
+      }
+      swatchEl.appendChild(swatchInner);
+
+      const scoreEl = document.createElement('div');
+      scoreEl.className = 'attempt-score';
+      if (attempt) {
+        const numSpan = document.createElement('span');
+        numSpan.className = 'score-num';
+        numSpan.textContent = attempt.score;
+        const lblSpan = document.createElement('span');
+        lblSpan.className = 'score-label';
+        lblSpan.textContent = 'pts';
+        scoreEl.appendChild(numSpan);
+        scoreEl.appendChild(lblSpan);
+      }
+
+      const emojiEl = document.createElement('div');
+      emojiEl.className = 'attempt-emoji';
+      emojiEl.setAttribute('aria-label', attempt ? scoreToEmoji(attempt.score) : 'pending');
+      if (attempt) emojiEl.textContent = scoreToEmoji(attempt.score);
+
+      row.appendChild(numEl);
+      row.appendChild(swatchEl);
+      row.appendChild(scoreEl);
+      row.appendChild(emojiEl);
+      attemptRowsEl.appendChild(row);
+    }
+  }
+
+  // ── SUBMIT GUESS ──────────────────────────────────────────────────────────
+  btnSubmit.addEventListener('click', () => {
+    if (state.done || state.attempts.length >= MAX_ATTEMPTS) return;
+
+    const h = parseInt(sliderH.value);
+    const s = parseInt(sliderS.value);
+    const l = parseInt(sliderL.value);
+    const score = computeScore({ h, s, l }, TARGET);
+
+    state.attempts.push({ h, s, l, score });
+
+    const won = score >= 95;
+    const allUsed = state.attempts.length >= MAX_ATTEMPTS;
+
+    if (won || allUsed) {
+      state.done = true;
+      state.won = won;
+      updateStreak(won);
+    }
+
+    saveState(state);
+    renderAttemptRows();
+
+    // Animate new row
+    const rows = attemptRowsEl.querySelectorAll('.attempt-row');
+    const newRow = rows[state.attempts.length - 1];
+    if (newRow) {
+      newRow.style.opacity = '0';
+      newRow.style.transform = 'translateX(-16px)';
+      requestAnimationFrame(() => {
+        newRow.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+        newRow.style.opacity = '1';
+        newRow.style.transform = 'translateX(0)';
+      });
+    }
+
+    // Shake on worst score
+    if (score < 30) {
+      mixerPanel.style.animation = 'none';
+      requestAnimationFrame(() => {
+        mixerPanel.style.animation = 'shake 0.5s ease';
+      });
+    }
+
+    updateAttemptIndicator();
+
+    if (state.done) {
+      setTimeout(() => showGameOver(), 500);
+      if (won) setTimeout(() => triggerCelebration(), 300);
+    }
+  });
+
+  function updateAttemptIndicator() {
+    const next = state.attempts.length + 1;
+    const ind = document.getElementById('attemptIndicator');
+    if (!state.done && next <= MAX_ATTEMPTS) {
+      ind.textContent = `(${next} / ${MAX_ATTEMPTS})`;
+    } else {
+      ind.textContent = '';
+    }
+  }
+
+  // ── STREAK ────────────────────────────────────────────────────────────────
+  function updateStreak(won) {
+    const yesterday = new Date(todayDate - 86400000).toISOString().slice(0, 10);
+    if (won) {
+      if (streakData.lastWonDate === yesterday) {
+        streakData.currentStreak += 1;
+      } else if (streakData.lastWonDate === todayStr) {
+        // already counted
+      } else {
+        streakData.currentStreak = 1;
+      }
+      streakData.bestStreak = Math.max(streakData.bestStreak, streakData.currentStreak);
+      streakData.lastWonDate = todayStr;
+    } else {
+      if (streakData.lastWonDate !== todayStr) {
+        streakData.currentStreak = 0;
+      }
+    }
+    saveStreak(streakData);
+    updateStreakDisplay();
+  }
+
+  // ── GAME OVER ─────────────────────────────────────────────────────────────
+  function showGameOver() {
+    mixerPanel.style.opacity = '0.35';
+    mixerPanel.style.pointerEvents = 'none';
+    btnSubmit.disabled = true;
+
+    const won = state.won;
+
+    // Badge
+    winBadgeWrap.innerHTML = '';
+    const badge = document.createElement('div');
+    badge.className = 'win-badge' + (won ? '' : ' lose-badge');
+    badge.textContent = won ? 'YOU GOT IT!' : 'CLOSE ENOUGH?';
+    winBadgeWrap.appendChild(badge);
+
+    gameoverHeader.className = 'gameover-header ' + (won ? 'win' : 'lose');
+    gameoverHeader.textContent = won ? '★ COLOR MATCHED' : '✕ PUZZLE OVER';
+
+    revealTarget.style.background = `hsl(${TARGET.h},${TARGET.s}%,${TARGET.l}%)`;
+    revealTargetHSL.textContent = `H:${TARGET.h} S:${TARGET.s}% L:${TARGET.l}%`;
+
+    // Best guess
+    const best = state.attempts.reduce((a, b) => a.score > b.score ? a : b);
+    revealBest.style.background = `hsl(${best.h},${best.s}%,${best.l}%)`;
+    revealBestHSL.textContent = `H:${best.h} S:${best.s}% L:${best.l}% · Score: ${best.score}`;
+
+    gameoverPanel.classList.add('visible');
+  }
+
+  // ── SHARE ─────────────────────────────────────────────────────────────────
+  btnShare.addEventListener('click', () => {
+    const emojis = state.attempts.map(a => scoreToEmoji(a.score)).join('');
+    const count = `${state.attempts.length}/${MAX_ATTEMPTS}`;
+    const text = `Prisma Shift #${puzzleNumber} ${emojis} ${count}\nbuiltbycrew.online/apps/prismashift`;
+    navigator.clipboard.writeText(text).then(() => {
+      shareToast.style.display = 'block';
+      setTimeout(() => { shareToast.style.display = 'none'; }, 2500);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      shareToast.style.display = 'block';
+      setTimeout(() => { shareToast.style.display = 'none'; }, 2500);
+    });
+  });
+
+  // ── HOW TO TOGGLE ─────────────────────────────────────────────────────────
+  document.getElementById('btnHowto').addEventListener('click', () => {
+    const hw = document.getElementById('howtoSection');
+    const isHidden = hw.style.display === 'none';
+    hw.style.display = isHidden ? '' : 'none';
+  });
+
+  // ── CELEBRATION ───────────────────────────────────────────────────────────
+  function triggerCelebration() {
+    const colors = ['#E63329', '#2255CC', '#F5F0E8', '#1A1A1A', '#F0C929'];
+    const count = 20;
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        p.className = 'burst-particle';
+        const angle = (i / count) * 360;
+        const dist = 80 + Math.random() * 120;
+        const size = 8 + Math.random() * 12;
+        p.style.cssText = `
+          width:${size}px; height:${size}px;
+          background:${colors[i % colors.length]};
+          left:calc(50% - ${size/2}px);
+          top:calc(40% - ${size/2}px);
+          transform: translate(0,0) scale(1);
+          border: 2px solid ${colors[(i+2)%colors.length]};
+          animation: none;
+        `;
+        celebOverlay.appendChild(p);
+        const rad = angle * Math.PI / 180;
+        const tx = Math.cos(rad) * dist;
+        const ty = Math.sin(rad) * dist;
+        requestAnimationFrame(() => {
+          p.style.transition = `transform ${0.6 + Math.random() * 0.4}s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease ${0.4 + Math.random() * 0.3}s`;
+          p.style.transform = `translate(${tx}px, ${ty}px) scale(0.3) rotate(${Math.random()*360}deg)`;
+          p.style.opacity = '0';
+          setTimeout(() => p.remove(), 1200);
+        });
+      }, i * 30);
+    }
+  }
+
+  // ── COUNTDOWN ─────────────────────────────────────────────────────────────
+  function updateCountdown() {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const diff = midnight - now;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    countdownTimer.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  setInterval(updateCountdown, 1000);
+  updateCountdown();
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  updateStreakDisplay();
+  renderAttemptRows();
+  updateAttemptIndicator();
+
+  if (state.done) {
+    btnSubmit.disabled = true;
+    mixerPanel.style.opacity = '0.35';
+    mixerPanel.style.pointerEvents = 'none';
+    // Show game over without animation delay
+    requestAnimationFrame(() => showGameOver());
+  }
+
+})();
+</script>
+</body>
+</html>
